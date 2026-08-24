@@ -38,7 +38,7 @@ Ambiente de IA pessoal com interface web, gateway unificado de modelos e recurso
 ## Instalação
 
 ```bash
-git clone https://github.com/seu-usuario/IA-Pessoal2.git
-cd IA-Pessoal2
+git clone https://github.com/anonimoseguranca1-afk/Personal-IA.git
+cd Personal-IA
 cp .env.example .env   # preencha com suas chaves
 docker compose up -d

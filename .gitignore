@@ -1,0 +1,6 @@
+.env
+openwebui/data/cache/
+.env
+openwebui/data/webui.db*
+openwebui/data/vector_db/
+openwebui/data/uploads/

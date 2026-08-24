@@ -1,0 +1,19 @@
+providers:
+  - id: deepseek
+    type: openai
+    api_key: "${DEEPSEEK_API_KEY}"   # Pega do .env
+    base_url: "https://api.deepseek.com/v1"
+    models:
+      - deepseek-chat
+      - deepseek-reasoner
+
+  # Provedor de visão via Gemini
+  - id: gemini
+    type: google
+    api_key: "${GEMINI_API_KEY}"
+    base_url: "https://generativelanguage.googleapis.com/v1beta"
+    models:
+      - gemini-1.5-flash
+      - gemini-1.5-pro
+
+  # Você pode adicionar outros (OpenAI, Claude, etc.)

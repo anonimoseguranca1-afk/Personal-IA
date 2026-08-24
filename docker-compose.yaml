@@ -1,0 +1,100 @@
+services:
+      # 1. Interface Web (Open WebUI)
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    restart: unless-stopped
+    ports:
+      - "${OPENWEBUI_PORT}:8080"
+    environment:
+      - ROUTER_API_KEY=${ROUTER_API_KEY}  # Nova variável
+      #- OPENAI_API_KEY=${DEEP_SEEK_API}  # Apoonta direto para api deepseek original do .env
+      - OPENAI_API_KEY=${ROUTER_API_KEY}  # O 9Router ignora essa chave, pois usa as do .env
+      - OPENAI_API_BASE_URL=http://9router:20128/v1
+      - WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+      # Ativa recursos
+      - ENABLE_WEB_SEARCH=True  # Ativa a pesquisa web globalmente
+      - ENABLE_CODE_INTERPRETER=true  # Habilita o interpretador de código globalmente
+      # Pesquisa Web Ativada e Otimizada
+      - ENABLE_WEB_SEARCH=True
+      - WEB_SEARCH_ENGINE=brave_llm_context   # Mais econômico
+      - BRAVE_SEARCH_API_KEY=${BRAVE_SEARCH_API_KEY}
+      - WEB_SEARCH_RESULT_COUNT=5             # Menos resultados = menos tokens
+      - WEB_SEARCH_CONCURRENT_REQUESTS=1      # Essencial para o plano gratuito
+      # PARÂMETROS DE GERAÇÃO (estilo Claude)
+      - OPENAI_API_DEFAULT_TEMPERATURE=0.7
+      - OPENAI_API_DEFAULT_TOP_P=0.95
+      - OPENAI_API_DEFAULT_TOP_K=40
+      - OPENAI_API_DEFAULT_MAX_TOKENS=4096
+      - OPENAI_API_DEFAULT_FREQUENCY_PENALTY=0.0
+      - OPENAI_API_DEFAULT_PRESENCE_PENALTY=0.0
+      - OPENAI_API_DEFAULT_MIN_P=0.0
+      - OPENAI_API_DEFAULT_REASONING_EFFORT=medium
+      # CONTEXTO E COMPACTAÇÃO
+      - CONTEXT_COMPACTION_THRESHOLD=80000
+      - CONTEXT_COMPACTION_MODEL=deepseek-chat
+
+      # FUNCTION CALLING
+      - ENABLE_FUNCTION_CALLING=true
+
+      # RACIOCÍNIO
+      - ENABLE_REASONING_TAGS=true
+
+      # STREAMING
+      - ENABLE_STREAMING=true
+    volumes:
+      - ./openwebui/data:/app/backend/data
+    networks:
+      - ia-network
+  # 2. Gateway Universal (9Router)
+  9router:
+    image: decolua/9router:latest
+    container_name: 9router
+    restart: unless-stopped
+    ports:
+      - "20128:20128"
+    volumes:
+      - ./9router/config:/app/config   # Seu arquivo config.yaml ficará aqui
+      - ./9router/data:/app/data       # Para persistência interna
+      - ./9router/logs:/app/logs
+    environment:
+    # - NODE_ENV=production
+    # Variáveis para serem usadas no config.yaml (opcional)
+      - DEEPSEEK_API_KEY=${DEEP_SEEK_API}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}   # Se for usar Gemini
+      - TOKEN_SAVER_ENABLED=true           # Ativa compressão de tokens
+      - TOKEN_SAVER_MODE=aggressive        # Modo agressivo (economia máxima) 
+      - INITIAL_PASSWORD=123456            # Define a senha inicial
+      - SEARXNG_URL=http://searxng:8080/search  # Aponta para o container SearXNG
+    networks:
+      - ia-network
+
+  # searxng:
+  #   image: searxng/searxng:latest
+  #   container_name: searxng
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8888:8080"  # Mapeia a porta 8888 do host para a porta 8080 do container
+  #   volumes:
+  #     - ./searxng/settings.yml:/usr/local/searxng/searx/settings.yml:ro
+  #     - ./searxng/settings.yml:/etc/searxng/settings.yml:ro  
+  #     # - ./searxng/limiter.toml:/etc/searxng/limiter.toml:ro   
+  #     # opcional # ← Montagem do arquivoconfigurações
+  #   environment:
+  #     - SEARXNG_BASE_URL=http://localhost:8888/
+  #     - SEARXNG_SECRET=your-secret-key-change-this
+  #     - SEARXNG_SETTINGS_PATH=/etc/searxng/settings.yml
+  #   networks:
+  #     - ia-network      
+
+  cloudflare-tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cloudflare-tunnel
+    restart: unless-stopped
+    command: tunnel --url http://openwebui:8080
+    networks:
+      - ia-network
+
+networks:
+  ia-network:
+    driver: bridge

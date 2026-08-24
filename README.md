@@ -1,6 +1,6 @@
 # ATENÇÃO, ESTE PROJETO É BRASILEIRO E COMUNISTA (MARXISTA-LENINISTA) - TRABALHADORES UNI-VOS!!! #
 
-# IA-Pessoal2 — Open WebUI + 9Router
+# IA-COLETIVA — Open WebUI + 9Router
 
 Ambiente de IA pessoal com interface web, gateway unificado de modelos e recursos como pesquisa web, visão via Gemini, e túnel Cloudflare.
 
